@@ -7,10 +7,10 @@ import (
 	"strings"
 )
 
-// Define o alfabeto usado na Enigma
+// Defines the alphabet used in Enigma
 const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
-// Mapeamento de um rotor
+// Mapping a rotor
 type Rotor struct {
 	forwardMapping  string
 	backwardMapping string
@@ -18,7 +18,7 @@ type Rotor struct {
 	notch           byte
 }
 
-// Cria um novo rotor
+// Create a new rotor
 func NewRotor(mapping string, notch byte) *Rotor {
 	backwardMapping := make([]byte, 26)
 	for i, char := range mapping {
@@ -27,7 +27,7 @@ func NewRotor(mapping string, notch byte) *Rotor {
 	return &Rotor{mapping, string(backwardMapping), 0, notch}
 }
 
-// Avança a posição do rotor
+// Advance rotor position
 func (r *Rotor) Rotate() bool {
 	r.position = (r.position + 1) % 26
 	return byte(r.position)+'A' == r.notch
@@ -39,18 +39,18 @@ func (r *Rotor) Forward(c byte) byte {
 	return (r.forwardMapping[index]-'A'-byte(r.position)+26)%26 + 'A'
 }
 
-// Passa o sinal através do rotor para trás
+// Passes the signal through the rotor forward
 func (r *Rotor) Backward(c byte) byte {
 	index := (int(c-'A') + r.position) % 26
 	return (r.backwardMapping[index]-'A'-byte(r.position)+26)%26 + 'A'
 }
 
-// Mapeamento do refletor
+// Reflector mapping
 type Reflector struct {
 	mapping string
 }
 
-// Cria um novo refletor
+// Create a new reflector
 func NewReflector(mapping string) *Reflector {
 	return &Reflector{mapping}
 }
@@ -60,17 +60,17 @@ func (r *Reflector) Reflect(c byte) byte {
 	return r.mapping[c-'A']
 }
 
-// Plugboard da Enigma
+// Reflect the signal
 type Plugboard struct {
 	wiring map[byte]byte
 }
 
-// Cria um novo plugboard
+// Create a new plugboard
 func NewPlugboard(wiring map[byte]byte) *Plugboard {
 	return &Plugboard{wiring}
 }
 
-// Mapeia o caractere através do plugboard
+// Maps the character through the plugboard
 func (p *Plugboard) Swap(c byte) byte {
 	if mapped, ok := p.wiring[c]; ok {
 		return mapped
@@ -78,19 +78,19 @@ func (p *Plugboard) Swap(c byte) byte {
 	return c
 }
 
-// Maquina Enigma
+// Enigma Machine
 type Enigma struct {
 	rotors    []*Rotor
 	reflector *Reflector
 	plugboard *Plugboard
 }
 
-// Cria uma nova maquina Enigma
+// Create a new Enigma machine
 func NewEnigma(rotors []*Rotor, reflector *Reflector, plugboard *Plugboard) *Enigma {
 	return &Enigma{rotors, reflector, plugboard}
 }
 
-// Encripta uma mensagem
+// Encrypt a message
 func (e *Enigma) Encrypt(message string) string {
 	var encryptedMessage strings.Builder
 	for _, char := range strings.ToUpper(message) {
@@ -98,29 +98,29 @@ func (e *Enigma) Encrypt(message string) string {
 			continue
 		}
 
-		// Passa pelo plugboard
+		// Go through the plugboard
 		c := e.plugboard.Swap(byte(char))
 
-		// Passa pelos rotores para frente
+		// Pass through the rotors forward
 		for i := len(e.rotors) - 1; i >= 0; i-- {
 			c = e.rotors[i].Forward(c)
 		}
 
-		// Reflete o sinal
+		// Reflect the signal
 		c = e.reflector.Reflect(c)
 
-		// Passa pelos rotores para tras
+		// Pass through the rotors backwards
 		for _, rotor := range e.rotors {
 			c = rotor.Backward(c)
 		}
 
-		// Passa pelo plugboard novamente
+		// Go through the plugboard again
 		c = e.plugboard.Swap(c)
 
-		// Adiciona o caractere criptografado à mensagem
+		// Add the encrypted character to the message
 		encryptedMessage.WriteByte(c)
 
-		// Roda os rotores
+		// Rotate the rotors
 		for i := len(e.rotors) - 1; i >= 0; i-- {
 			if !e.rotors[i].Rotate() {
 				break
@@ -132,62 +132,61 @@ func (e *Enigma) Encrypt(message string) string {
 }
 
 func main() {
-	// Definir rotores e refletor
+	// Define rotors and reflector
 	rotor1 := NewRotor("EKMFLGDQVZNTOWYHXUSPAIBRCJ", 'Q')
 	rotor2 := NewRotor("AJDKSIRUXBLHWTMCQGZNPYFVOE", 'E')
 	rotor3 := NewRotor("BDFHJLCPRTXVZNYEIWGAKMUSQO", 'V')
 	reflector := NewReflector("YRUHQSLDPXNGOKMIEBFZCWVJAT")
 
-	// Definir plugboard
+	// Define plugboard
 	plugboardWiring := map[byte]byte{
-		'A': 'B', 'B': 'A', 'C': 'D', 'D': 'C', // Exemplo de configuração de plugboard
+		'A': 'B', 'B': 'A', 'C': 'D', 'D': 'C',
 	}
 	plugboard := NewPlugboard(plugboardWiring)
 
-	// Criar maquina Enigma
+	// Create Enigma machine
 	enigma := NewEnigma([]*Rotor{rotor1, rotor2, rotor3}, reflector, plugboard)
 
 	fmt.Println(`
 	###############################################
 	#                                             #
-	#                   ENIGMA                    #
+	#                    ENIGMA                   #
 	#                                             #
 	###############################################
 	`)
 
-	// Leitura da entrada do usuario
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
-		fmt.Print("Digite '1' para cifrar ou '2' para decifrar (ou 'sair' para terminar): ")
+		fmt.Print("Type '1' to encrypt or '2' to decrypt (or 'exit' to finish): ")
 		if !scanner.Scan() {
 			break
 		}
 		option := scanner.Text()
-		if strings.ToLower(option) == "sair" {
+		if strings.ToLower(option) == "exit" {
 			break
 		}
 		if option != "1" && option != "2" {
-			fmt.Println("Opção inválida. Tente novamente.")
+			fmt.Println("Option invalid, try (1 or 2)")
 			continue
 		}
 
-		fmt.Print("Digite a mensagem: ")
+		fmt.Print("Enter a message: ")
 		if !scanner.Scan() {
 			break
 		}
 		input := scanner.Text()
 
-		// Reseta a posição dos rotores antes de cada operação
+		// Resets the position of the rotors before each operation
 		rotor1.position, rotor2.position, rotor3.position = 0, 0, 0
 
 		if option == "1" {
 			encryptedMessage := enigma.Encrypt(input)
-			fmt.Printf("Mensagem criptografada: %s\n", encryptedMessage)
+			fmt.Printf("Encrypted message: %s\n", encryptedMessage)
 		} else {
 			decryptedMessage := enigma.Encrypt(input)
-			fmt.Printf("Mensagem decifrada: %s\n", decryptedMessage)
+			fmt.Printf("Decrypted message: %s\n", decryptedMessage)
 		}
 	}
 
-	fmt.Println("Programa encerrado.")
+	fmt.Println("Program closed.")
 }
