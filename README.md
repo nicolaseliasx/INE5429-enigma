@@ -13,6 +13,7 @@ sudo pacman -S go
 
 Afeter install:
 ```
+git clone https://github.com/nicolaseliasx/INE5429-enigma.git
 cd INE5429-enigma
 make run
 ```
