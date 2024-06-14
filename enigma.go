@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"strings"
 )
 
@@ -76,14 +78,14 @@ func (p *Plugboard) Swap(c byte) byte {
 	return c
 }
 
-// Máquina Enigma
+// Maquina Enigma
 type Enigma struct {
-	rotors     []*Rotor
-	reflector  *Reflector
-	plugboard  *Plugboard
+	rotors    []*Rotor
+	reflector *Reflector
+	plugboard *Plugboard
 }
 
-// Cria uma nova máquina Enigma
+// Cria uma nova maquina Enigma
 func NewEnigma(rotors []*Rotor, reflector *Reflector, plugboard *Plugboard) *Enigma {
 	return &Enigma{rotors, reflector, plugboard}
 }
@@ -107,7 +109,7 @@ func (e *Enigma) Encrypt(message string) string {
 		// Reflete o sinal
 		c = e.reflector.Reflect(c)
 
-		// Passa pelos rotores para trás
+		// Passa pelos rotores para tras
 		for _, rotor := range e.rotors {
 			c = rotor.Backward(c)
 		}
@@ -142,13 +144,50 @@ func main() {
 	}
 	plugboard := NewPlugboard(plugboardWiring)
 
-	// Criar máquina Enigma
+	// Criar maquina Enigma
 	enigma := NewEnigma([]*Rotor{rotor1, rotor2, rotor3}, reflector, plugboard)
 
-	// Mensagem de exemplo
-	message := "HELLOENIGMA"
-	encryptedMessage := enigma.Encrypt(message)
+	fmt.Println(`
+	###############################################
+	#                                             #
+	#                   ENIGMA                    #
+	#                                             #
+	###############################################
+	`)
 
-	fmt.Printf("Mensagem original: %s\n", message)
-	fmt.Printf("Mensagem criptografada: %s\n", encryptedMessage)
+	// Leitura da entrada do usuario
+	scanner := bufio.NewScanner(os.Stdin)
+	for {
+		fmt.Print("Digite '1' para cifrar ou '2' para decifrar (ou 'sair' para terminar): ")
+		if !scanner.Scan() {
+			break
+		}
+		option := scanner.Text()
+		if strings.ToLower(option) == "sair" {
+			break
+		}
+		if option != "1" && option != "2" {
+			fmt.Println("Opção inválida. Tente novamente.")
+			continue
+		}
+
+		fmt.Print("Digite a mensagem: ")
+		if !scanner.Scan() {
+			break
+		}
+		input := scanner.Text()
+
+		// Reseta a posição dos rotores antes de cada operação
+		rotor1.position, rotor2.position, rotor3.position = 0, 0, 0
+
+		if option == "1" {
+			encryptedMessage := enigma.Encrypt(input)
+			fmt.Printf("Mensagem criptografada: %s\n", encryptedMessage)
+		} else {
+			decryptedMessage := enigma.Encrypt(input)
+			fmt.Printf("Mensagem decifrada: %s\n", decryptedMessage)
+		}
+	}
+
+	fmt.Println("Programa encerrado.")
 }
