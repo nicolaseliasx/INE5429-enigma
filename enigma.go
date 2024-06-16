@@ -7,9 +7,6 @@ import (
 	"strings"
 )
 
-// Defines the alphabet used in Enigma
-const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-
 // Mapping a rotor
 type Rotor struct {
 	forwardMapping  string
@@ -33,13 +30,13 @@ func (r *Rotor) Rotate() bool {
 	return byte(r.position)+'A' == r.notch
 }
 
-// Passa o sinal através do rotor para frente
+// Passes the signal through the rotor Forward
 func (r *Rotor) Forward(c byte) byte {
 	index := (int(c-'A') + r.position) % 26
 	return (r.forwardMapping[index]-'A'-byte(r.position)+26)%26 + 'A'
 }
 
-// Passes the signal through the rotor forward
+// Passes the signal through the rotor Backward
 func (r *Rotor) Backward(c byte) byte {
 	index := (int(c-'A') + r.position) % 26
 	return (r.backwardMapping[index]-'A'-byte(r.position)+26)%26 + 'A'
